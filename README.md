@@ -27,6 +27,7 @@ meio escolhido, e o BFF valida tudo e faz a cobrança, que pode ser aprovada ou 
 
 ```mermaid
 sequenceDiagram
+    autonumber
     participant FE as Frontend
     participant BFF as bff-checkout
     participant R as Redis
@@ -47,8 +48,9 @@ sequenceDiagram
 
     FE->>BFF: POST /operations/checkout
     BFF->>DB: carrega carrinho
-    BFF->>G: cobrança
-    BFF->>DB: carrinho APPROVED
+    BFF->>DB: reserva carrinho (PROCESSING)
+    BFF->>G: cobrança com chave de idempotência
+    BFF->>DB: APPROVED, ou PENDING se recusada
     BFF-->>FE: dados do pagamento ou frontendError
 ```
 
