@@ -1,0 +1,68 @@
+spring:
+  application:
+    name: bff-checkout
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/checkout}
+    username: ${DB_USER:checkout}
+    password: ${DB_PASSWORD:checkout}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      connect-timeout: 500ms
+      timeout: 500ms
+  http:
+    clients:
+      connect-timeout: 2s
+      read-timeout: 5s
+  cache:
+    type: redis
+    redis:
+      time-to-live: 10m
+
+server:
+  port: ${PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      group:
+        # Liveness não olha dependências externas: banco fora do ar não deve reiniciar o pod.
+        # Readiness não inclui o Redis: sem cache a aplicação continua atendendo, só mais devagar.
+        readiness:
+          include: readinessState, db
+
+checkout:
+  payment:
+    # Depois desse tempo, um carrinho parado em PROCESSING (ex.: queda no meio da cobrança) aceita nova tentativa,
+    # com a mesma chave de idempotência. Precisa ser maior que o timeout de leitura do gateway.
+    processing-timeout: 2m
+  cache:
+    circuit-breaker:
+      sliding-window-size: 10
+      minimum-number-of-calls: 4
+      failure-rate-threshold: 50
+      wait-duration-in-open-state: 30s
+      permitted-number-of-calls-in-half-open-state: 2
+
+# "Serviços externos". Por padrão, os mocks servidos pela própria aplicação em /mock.
+services:
+  products:
+    base-url: ${PRODUCTS_URL:http://localhost:${server.port}/mock}
+  payment-methods:
+    base-url: ${PAYMENT_METHODS_URL:http://localhost:${server.port}/mock}
+
+springdoc:
+  paths-to-match: /operations/**
+  swagger-ui:
+    path: /swagger-ui.html
