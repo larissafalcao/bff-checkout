@@ -37,15 +37,11 @@ management:
       probes:
         enabled: true
       group:
-        # Liveness não olha dependências externas: banco fora do ar não deve reiniciar o pod.
-        # Readiness não inclui o Redis: sem cache a aplicação continua atendendo, só mais devagar.
         readiness:
           include: readinessState, db
 
 checkout:
   payment:
-    # Depois desse tempo, um carrinho parado em PROCESSING (ex.: queda no meio da cobrança) aceita nova tentativa,
-    # com a mesma chave de idempotência. Precisa ser maior que o timeout de leitura do gateway.
     processing-timeout: 2m
   cache:
     circuit-breaker:
@@ -55,7 +51,6 @@ checkout:
       wait-duration-in-open-state: 30s
       permitted-number-of-calls-in-half-open-state: 2
 
-# "Serviços externos". Por padrão, os mocks servidos pela própria aplicação em /mock.
 services:
   products:
     base-url: ${PRODUCTS_URL:http://localhost:${server.port}/mock}
