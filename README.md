@@ -1,8 +1,6 @@
 # bff-checkout
 
-BFF (Backend for Frontend) do checkout de assinaturas. É a API por trás das telas de pagamento, sucesso e erro: ela
-busca produtos e meios de pagamento nos serviços que são donos desses dados e entrega para o frontend só o que cada
-tela usa. Qualquer erro volta no mesmo formato, para o frontend não precisar tratar casos especiais.
+BFF (Backend for Frontend) do checkout de assinaturas.
 
 ## Sumário
 
